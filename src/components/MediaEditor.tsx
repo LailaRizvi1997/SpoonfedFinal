@@ -1,3 +1,8 @@
+"use client"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+
 export interface MediaSegment {
   file: File
   preview: string
