@@ -3,46 +3,60 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
-import { User } from "@supabase/supabase-js"
+import type { User } from "@supabase/supabase-js"
 import { upsertUser } from "@/services/user"
+import type { User as AppUser } from "@/types/user"
 
 interface AuthContextType {
-  user: any | null
-  loading: boolean
+  user: AppUser | null
+  isLoading: boolean
+  signIn: (email: string, password: string) => Promise<void>
+  signUp: (email: string, password: string) => Promise<void>
+  signOut: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  loading: true,
+  isLoading: true,
+  signIn: async () => {},
+  signUp: async () => {},
+  signOut: async () => {},
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<AppUser | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const { toast } = useToast()
+
+  const handleUser = async (supabaseUser: User | null) => {
+    if (!supabaseUser) {
+      setUser(null)
+      return
+    }
+
+    const userData = await upsertUser()
+    if (userData) {
+      setUser({
+        ...userData,
+        email: supabaseUser.email || "",
+        user_metadata: supabaseUser.user_metadata
+      })
+    }
+  }
 
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        upsertUser().then(userData => {
-          setUser(userData)
-        })
-      }
-      setLoading(false)
+      handleUser(session?.user || null)
+      setIsLoading(false)
     })
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        const userData = await upsertUser()
-        setUser(userData)
-      } else {
-        setUser(null)
-      }
-      setLoading(false)
+      await handleUser(session?.user || null)
+      setIsLoading(false)
     })
 
     return () => {
@@ -90,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, isLoading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   )

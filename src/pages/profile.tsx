@@ -126,9 +126,9 @@ export default function ProfilePage() {
     user?.user_metadata?.username || user?.email?.split("@")[0] || ""
   )
   const [bio, setBio] = useState(user?.user_metadata?.bio || "")
-  const [cuisine1, setCuisine1] = useState(user?.user_metadata?.cuisines?.[0] || "")
-  const [cuisine2, setCuisine2] = useState(user?.user_metadata?.cuisines?.[1] || "")
-  const [cuisine3, setCuisine3] = useState(user?.user_metadata?.cuisines?.[2] || "")
+  const [cuisine1, setCuisine1] = useState(user?.user_metadata?.cuisines?.[0] ?? "")
+  const [cuisine2, setCuisine2] = useState(user?.user_metadata?.cuisines?.[1] ?? "")
+  const [cuisine3, setCuisine3] = useState(user?.user_metadata?.cuisines?.[2] ?? "")
 
   useEffect(() => {
     if (user) loadUserData()
@@ -434,9 +434,10 @@ export default function ProfilePage() {
                 {user.user_metadata.bio}
               </p>
             )}
-            {user.user_metadata?.cuisines?.length > 0 && (
-              <p className="mt-1 text-sm text-muted-foreground">
-                <strong>Top Cuisines:</strong> {user.user_metadata.cuisines.join(", ")}
+            {(user?.user_metadata?.cuisines ?? []).length > 0 && (
+              <p className="text-sm text-muted-foreground mt-2">
+                <strong>Top Cuisines:</strong>{" "}
+                {(user.user_metadata?.cuisines ?? []).join(", ")}
               </p>
             )}
           </div>
