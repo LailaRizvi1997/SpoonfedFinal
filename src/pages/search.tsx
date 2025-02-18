@@ -178,7 +178,10 @@ export default function SearchPage() {
 
       // Perform the places search
       const searchRequest = {
-        location: searchLocation,
+        location: {
+          lat: searchLocation.lat(),
+          lng: searchLocation.lng()
+        },
         radius: 5000, // 5km radius
         type: 'restaurant',
         keyword: `${query} ${selectedCuisine !== "All" ? selectedCuisine : ""}`.trim()

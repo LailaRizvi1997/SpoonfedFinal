@@ -1,0 +1,1 @@
+export type ReviewTag = 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL';  // adjust these values based on your actual tag options 
