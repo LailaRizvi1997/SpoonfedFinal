@@ -32,6 +32,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { ReviewCard } from "@/components/review-card"
 import { UserCard } from "@/components/user-card"
 import { ListCard } from "@/components/list-card"
+import { Review, ReviewTag, List } from '@/types/review'
+import { REVIEW_TAGS } from "@/constants/review"
 
 type SearchType = "restaurants" | "users" | "reviews" | "lists"
 
@@ -60,40 +62,6 @@ type User = {
   reviews_count: number
   golden_spoon_count: number
   wooden_spoon_count: number
-}
-
-type Review = {
-  id: string
-  user: {
-    id: string
-    username: string
-    avatar_url: string
-  }
-  restaurant: {
-    id: string
-    name: string
-    address: string
-    cuisine_type: string | null
-  }
-  rating: number
-  content: string
-  created_at: string
-  likes_count: number
-  is_golden_spoon: boolean
-  is_wooden_spoon: boolean
-  tag: string | null
-}
-
-type List = {
-  id: string
-  name: string
-  description: string | null
-  cover_url: string | null
-  restaurant_count: number | { count: number }
-  favorites_count: number
-  user: {
-    username: string
-  }
 }
 
 const CUISINES = [
@@ -152,6 +120,8 @@ export default function SearchPage() {
   const [isGoogleMapsLoaded, setIsGoogleMapsLoaded] = useState(false)
 
   const searchRestaurants = async () => {
+    console.log('Starting restaurant search...')
+    
     if (!isGoogleMapsLoaded) {
       toast.error("Google Maps is still loading", "Please try again in a moment")
       return
@@ -304,27 +274,45 @@ export default function SearchPage() {
 
       if (error) throw error
 
-      const transformedReviews: Review[] = data.map(review => ({
-        id: review.id,
-        user: {
-          id: review.user.id,
-          username: review.user.username,
-          avatar_url: review.user.avatar_url
-        },
-        restaurant: {
-          id: review.restaurant.id,
-          name: review.restaurant.name,
-          address: review.restaurant.address,
-          cuisine_type: review.restaurant.cuisine_type
-        },
-        rating: review.rating,
-        content: review.text,
-        created_at: review.created_at,
-        likes_count: review.likes_count,
-        is_golden_spoon: review.is_golden_spoon,
-        is_wooden_spoon: review.is_wooden_spoon,
-        tag: review.tag as ReviewTag | null
-      }))
+      const transformedReviews: Review[] = data.map(review => {
+        const userData = Array.isArray(review.user) ? review.user[0] : review.user
+        const restaurantData = Array.isArray(review.restaurant) 
+          ? review.restaurant[0] 
+          : review.restaurant
+
+        return {
+          id: review.id,
+          user: {
+            id: String(userData?.id),
+            username: String(userData?.username),
+            avatar_url: String(userData?.avatar_url)
+          },
+          restaurant: restaurantData ? {
+            id: String(restaurantData.id),
+            name: String(restaurantData.name),
+            address: String(restaurantData.address),
+            cuisine_type: restaurantData.cuisine_type
+          } : undefined,
+          rating: review.rating,
+          content: review.text || "",
+          tag: review.tag ? (
+            REVIEW_TAGS.includes(review.tag) 
+              ? review.tag as ReviewTag 
+              : (review.is_golden_spoon 
+                ? "elite" 
+                : review.is_wooden_spoon 
+                  ? "daylight robbery" 
+                  : null)
+          ) : null,
+          created_at: review.created_at,
+          updated_at: review.created_at,
+          photos: [],
+          audio_url: undefined,
+          likes_count: review.likes_count || 0,
+          is_golden_spoon: Boolean(review.is_golden_spoon),
+          is_wooden_spoon: Boolean(review.is_wooden_spoon)
+        }
+      })
 
       setReviewResults(transformedReviews)
     } catch (error) {
@@ -355,15 +343,19 @@ export default function SearchPage() {
 
       if (error) throw error
 
-      const transformedLists: List[] = data.map(list => ({
-        id: list.id,
-        name: list.name,
-        description: list.description,
-        cover_url: list.cover_url,
-        restaurant_count: list.restaurant_count[0]?.count ?? 0,
-        favorites_count: list.favorites_count,
-        user: list.user
-      }))
+      const transformedLists = data.map(list => ({
+        id: list.id as string,
+        name: list.name as string,
+        description: list.description as string,
+        cover_url: list.cover_url as string,
+        restaurant_count: Array.isArray(list.restaurant_count) 
+          ? list.restaurant_count[0]?.count ?? 0 
+          : 0,
+        favorites_count: list.favorites_count as number,
+        user: {
+          username: list.user[0].username as string
+        }
+      })) as List[]
 
       setListResults(transformedLists)
     } catch (error) {
@@ -654,7 +646,18 @@ export default function SearchPage() {
             {searchType === "reviews" && reviewResults.map((review) => (
               <ReviewCard
                 key={review.id}
-                review={review}
+                review={{
+                  ...review,
+                  tag: review.tag ? (
+                    REVIEW_TAGS.includes(review.tag) 
+                      ? review.tag as ReviewTag 
+                      : (review.is_golden_spoon 
+                        ? "elite" 
+                        : review.is_wooden_spoon 
+                          ? "daylight robbery" 
+                          : null)
+                  ) : null
+                }}
                 currentUserId={user?.id}
                 showRestaurantInfo={true}
               />

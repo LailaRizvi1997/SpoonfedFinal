@@ -100,6 +100,9 @@ export function ReviewForm({ restaurantId, onSuccess, onCancel }: ReviewFormProp
       const segments: MediaSegment[] = files.map(file => ({
         file,
         preview: URL.createObjectURL(file),
+        start: 0,
+        end: 0,
+        content: file.name
       }))
       setMediaSegments(prev => [...prev, ...segments])
     }
@@ -177,18 +180,21 @@ export function ReviewForm({ restaurantId, onSuccess, onCancel }: ReviewFormProp
       
       // Upload photos/videos
       for (const segment of mediaSegments) {
+        if (!segment.file) {
+          console.warn('Skipping segment without file')
+          continue
+        }
+
         const fileExt = segment.file.name.split('.').pop()
         const fileName = `${user.id}/${Math.random().toString(36).slice(2)}.${fileExt}`
         const filePath = `reviews/${fileName}`
 
-        // Removed "data" from destructuring since it wasn't used.
         const { error: uploadError } = await supabase.storage
           .from('reviews')
           .upload(filePath, segment.file)
 
         if (uploadError) throw uploadError
 
-        // Get public URL for the uploaded file.
         const { data: publicData } = supabase.storage.from('reviews').getPublicUrl(filePath)
         const publicUrl = publicData.publicUrl
 
@@ -325,7 +331,10 @@ export function ReviewForm({ restaurantId, onSuccess, onCancel }: ReviewFormProp
         </div>
         {mediaSegments.length > 0 && (
           <div className="mt-4">
-            <MediaEditor segments={mediaSegments} onChange={setMediaSegments} />
+            <MediaEditor 
+              segments={mediaSegments} 
+              onSegmentsChange={setMediaSegments}
+            />
           </div>
         )}
       </div>

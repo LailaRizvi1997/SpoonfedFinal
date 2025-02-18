@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import {
   Dialog,
   DialogContent,
@@ -9,9 +8,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import type { DialogProps } from "@radix-ui/react-dialog"
 
-type AddToListDialogProps = {
+interface AddToListDialogProps {
   isOpen: boolean
   onClose: () => void
   restaurantId: string
@@ -26,16 +24,22 @@ export function AddToListDialog({
 }: AddToListDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add {restaurantName} to a List</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">
+            Add {restaurantName} to a List
+          </DialogTitle>
         </DialogHeader>
         <div className="py-4">
           {/* Insert your UI and logic to add the restaurant to a list */}
-          <p>This feature is under construction.</p>
+          <p className="text-sm text-muted-foreground">
+            This feature is under construction.
+          </p>
         </div>
         <DialogFooter>
-          <Button onClick={onClose}>Close</Button>
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
