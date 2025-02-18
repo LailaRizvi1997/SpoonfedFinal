@@ -210,8 +210,8 @@ export default function SearchPage() {
         cuisine_type: selectedCuisine !== "All" ? selectedCuisine : null,
         geometry: {
           location: {
-            lat: place.geometry?.location.lat() || 0,
-            lng: place.geometry?.location.lng() || 0,
+            lat: place.geometry?.location?.lat() ?? 0,
+            lng: place.geometry?.location?.lng() ?? 0,
           },
         },
       }))
@@ -259,7 +259,14 @@ export default function SearchPage() {
         .limit(20)
 
       if (error) throw error
-      setUserResults(data || [])
+      setUserResults(data.map(user => ({
+        id: user.id,
+        username: user.username,
+        avatar_url: user.avatar_url,
+        reviews_count: user.reviews_count,
+        golden_spoon_count: user.golden_spoon_count,
+        wooden_spoon_count: user.wooden_spoon_count
+      })))
     } catch (error) {
       console.error("Error searching users:", error)
       toast.error("Error searching users", "Please try again")
@@ -297,21 +304,26 @@ export default function SearchPage() {
 
       if (error) throw error
 
-      const transformedReviews = data.map(review => ({
+      const transformedReviews: Review[] = data.map(review => ({
         id: review.id,
         user: {
           id: review.user.id,
           username: review.user.username,
           avatar_url: review.user.avatar_url
         },
-        restaurant: review.restaurant,
+        restaurant: {
+          id: review.restaurant.id,
+          name: review.restaurant.name,
+          address: review.restaurant.address,
+          cuisine_type: review.restaurant.cuisine_type
+        },
         rating: review.rating,
         content: review.text,
         created_at: review.created_at,
         likes_count: review.likes_count,
         is_golden_spoon: review.is_golden_spoon,
         is_wooden_spoon: review.is_wooden_spoon,
-        tag: review.tag
+        tag: review.tag as ReviewTag | null
       }))
 
       setReviewResults(transformedReviews)
@@ -343,20 +355,17 @@ export default function SearchPage() {
 
       if (error) throw error
 
-      // If user is logged in, check which lists they've favorited
-      if (user) {
-        const { data: favoritesData } = await supabase
-          .from('list_favorites')
-          .select('list_id')
-          .eq('user_id', user.id)
-          .in('list_id', data.map(list => list.id))
+      const transformedLists: List[] = data.map(list => ({
+        id: list.id,
+        name: list.name,
+        description: list.description,
+        cover_url: list.cover_url,
+        restaurant_count: list.restaurant_count[0]?.count ?? 0,
+        favorites_count: list.favorites_count,
+        user: list.user
+      }))
 
-        if (favoritesData) {
-          setFavoritedLists(new Set(favoritesData.map(f => f.list_id)))
-        }
-      }
-
-      setListResults(data)
+      setListResults(transformedLists)
     } catch (error) {
       console.error("Error searching lists:", error)
       toast.error("Error searching lists", "Please try again")

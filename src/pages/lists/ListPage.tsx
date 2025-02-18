@@ -1,6 +1,5 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import Masonry from "react-masonry-css"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
