@@ -17,14 +17,14 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
     "allowJs": true,
     "incremental": true,
     "esModuleInterop": true,
-    "types": ["vite/client", "react", "react-dom"]
+    "types": ["vite/client"]
   },
-  "include": ["src", "vite-env.d.ts"],
+  "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }],
   "exclude": ["node_modules"]
 }

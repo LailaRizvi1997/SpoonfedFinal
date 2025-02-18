@@ -9,6 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import type { DialogProps } from "@radix-ui/react-dialog"
 
 type AddToListDialogProps = {
   isOpen: boolean
@@ -25,7 +26,7 @@ export function AddToListDialog({
 }: AddToListDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Add {restaurantName} to a List</DialogTitle>
         </DialogHeader>
