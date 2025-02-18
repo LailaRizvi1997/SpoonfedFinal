@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import {
   Dialog,
   DialogContent,
@@ -19,7 +20,7 @@ type AddToListDialogProps = {
 export function AddToListDialog({
   isOpen,
   onClose,
-  restaurantId: _restaurantId, // renamed to indicate it's intentionally unused
+  restaurantId: _restaurantId,
   restaurantName,
 }: AddToListDialogProps) {
   return (
